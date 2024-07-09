@@ -1,23 +1,92 @@
 'use client'
 
+import { useState } from 'react'
+import axios from 'axios'
 import * as S from './style'
 
 const RegisterForm = () => {
-  const onSubmit = (e) => {
+  const [name, setName] = useState('')
+  const [email, setEmail] = useState('')
+  const [password, setPassword] = useState('')
+
+  const [open, setOpen] = useState({
+    open: false,
+    mensage: '',
+    severity: ''
+  })
+
+  const onSubmit = async (e) => {
     e.preventDefault()
-    console.log('Formulario enviado')
+
+    try {
+      const response = await axios.post('http://localhost:8080/auth/register', {name, email, password })
+      console.log('response', response)
+      localStorage.setItem('token', response.data.data)
+      setOpen({
+        open: true,
+        mensage: `Usuario ${ email } cadastrado com sucesso!`,
+        severity: 'success'
+      })
+    } catch (error) {
+      setOpen({
+        open: true,
+        mensage: error.response.data.error,
+        severity: 'error'
+      })
+    }
+  }
+
+  const handleClose = (_, reason) => {
+    if (reason === 'clicckaway'){
+      return
+    }
+    setOpen({
+      open: false,
+      mensage: '',
+      severity: ''
+    })
   }
 
   return (
-    <form onClick={ onSubmit }>
-      <h1>Formulário de registro</h1>
+    <>
+      <S.Form onSubmit={ onSubmit }>
+        <h1>Cadastre-se</h1>
 
-      <S.TextField id="name" label="Nome" variant="outlined" />
-      <S.TextField id="email" label="E-mail" variant="outlined" />
-      <S.TextField id="password" label="Password" variant="outlined" />
+        <S.TextField
+          name="name"
+          onChange={ (e) => setName(e.target.value) }
+          type='text'
+          label="Nome"
+          variant="outlined"
+          value={ name }
+        />
 
-      <S.Button variant="contained"type="submit">Enviar</S.Button>
-    </form>
+        <S.TextField
+          name="email"
+          onChange={  (e) => setEmail(e.target.value)}
+          type='email'
+          label="E-mail"
+          variant="outlined"
+          value={ email }
+        />
+
+        <S.TextField
+          name="password" 
+          onChange={ (e) => setPassword(e.target.value)}
+          type='password'
+          label="Password"
+          variant="outlined"
+          value={ password }
+        />
+
+        <S.Button variant="contained" type="submit">Enviar</S.Button>
+      </S.Form>
+      <S.Snackbar open={ open } autoHideDuration={3000} onClose={ handleClose }>
+        <S.Alert onClose={ handleClose }  variant='filled' severity='success' >
+          { open.mensage }
+        </S.Alert>
+      </S.Snackbar>
+    </>
   )
 }
 
