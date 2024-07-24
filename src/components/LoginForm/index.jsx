@@ -1,18 +1,22 @@
 'use client'
 
 import { useState } from 'react'
+import { useRouter } from "next/navigation";
 import axios from 'axios'
 import * as S from '../RegisterForm/style'
 
 const LoginForm = () => {
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
+  const [showPassword, setshowPassword] = useState(false)
 
   const [open, setOpen] = useState({
     open: false,
     mensage: '',
     severity: ''
   })
+
+  const router = useRouter()
 
   const onSubmit = async (e) => {
     e.preventDefault()
@@ -26,6 +30,8 @@ const LoginForm = () => {
         mensage: `Usuário ${email} autenticado com sucesso!`,
         severity: 'success'
       })
+
+      router.push('/dashboard')
     } catch (error) {
       setOpen({
         open: true,
@@ -45,10 +51,16 @@ const LoginForm = () => {
       severity: ''
     })
   }
+
+  const handleClickShowPassword = () =>  setshowPassword((show) => !show)
+  const handleMouseDownPassword = (event) => {
+    event.preventDefault()
+  }
+
   return (
     <>
       <S.Form onSubmit={ onSubmit }>
-        <h1>Autentificação</h1>
+        <S.Typography variant='h1' color="primary">YOURfinace.IO</S.Typography>
 
         <S.TextField
           name="email"
@@ -57,18 +69,38 @@ const LoginForm = () => {
           label="E-mail"
           variant="outlined"
           value={ email }
+          fullWidth
         />
 
-        <S.TextField
-          name="password"
-          onChange={(e) => setPassword(e.target.value)}
-          type='password'
-          label="Senha"
-          variant="outlined"
-          value={ password }
-        />
+        <S.FormControl fullWidth variant="outlined">
+          <S.InputLabel htmlFor="outlined-adornment-password">Password</S.InputLabel>
+          <S.OutlinedInput
+            id="outlined-adornment-password"
+            name="password"
+            onChange={ (e) => setPassword(e.target.value)}
+            variant="outlined"
+            value={ password }
+            type={showPassword ? 'text' : 'password'}
+            endAdornment={
+              <S.InputAdornment position="end">
+                <S.IconButton
+                  aria-label="toggle password visibility"
+                  onClick={handleClickShowPassword}
+                  onMouseDown={handleMouseDownPassword}
+                  edge="end"
+                >
+                  {showPassword ? <S.VisibilityOff /> : <S.Visibility />}
 
-        <S.Button variant="contained" type="submit">Enviar</S.Button>
+                </S.IconButton>
+              </S.InputAdornment>
+            }
+            label="Password"
+          />
+        </S.FormControl>
+
+        <S.Button variant="contained" type="submit" fullWidth>Enviar</S.Button>
+
+        <S.Link href="/register">Criar uma conta</S.Link>
       </S.Form>
       <S.Snackbar open={ open.open } autoHideDuration={3000} onClose={handleClose }>
         <S.Alert onClose={handleClose }  variant='filled' severity={open.successp} >
